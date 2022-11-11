@@ -1,0 +1,5 @@
+#Ignore cmake build output
+cmake-build-*/
+
+#Ignore automatically added folders
+.idea/
