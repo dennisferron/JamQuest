@@ -9,19 +9,10 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
 
-RenderWindow::RenderWindow()
+RenderWindow::RenderWindow(SDL_Window* window)
+    : window(window)
 {
-
-}
-
-void RenderWindow::create(const char* p_title, int p_w, int p_h)
-{
-	window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN);
-
-	if (window == NULL)
-		std::cout << "Window failed to init. Error: " << SDL_GetError() << std::endl;
-
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
 
 
@@ -129,9 +120,4 @@ void RenderWindow::renderCenter(float p_x, float p_y, const char* p_text, TTF_Fo
 void RenderWindow::display()
 {
 	SDL_RenderPresent(renderer);
-}
-
-void RenderWindow::cleanUp()
-{
-	SDL_DestroyWindow(window);
 }

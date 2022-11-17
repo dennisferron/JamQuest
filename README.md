@@ -46,7 +46,7 @@ what the tutorial said to.  (https://tech-en.netlify.app/articles/en522284/index
 
 ### CMake Profiles
 
-Right underneath Toolchains is the CMake tab, which does need to be configured per-project.    (This can also be done in the profiles pop-up window CLion gives when you first open a new project.)
+Right underneath Toolchains is the CMake tab, which does need to be configured per-project.    (This can also be done in the profiles pop-up render_window CLion gives when you first open a new project.)
 
 Setting up a profile is required in order for a Release build option to be present in CLion's build/run options after the reload of a CMakeLists.txt.  If the configure step fails for any reason, the build option for it won't be present in the UI later.
 
@@ -68,7 +68,7 @@ It should say, "Serving HTTP on :: port 8000 (http://[::]:8000/) ..."
 
 In a browser, navigate to "http://localhost:8000/".
 
-Note: if nothing happens in the browser but also no more messages show after the "Serving ..." message in the command prompt, pressing Ctl-C in the command prompt window may print backed up error messages and Python exception information.
+Note: if nothing happens in the browser but also no more messages show after the "Serving ..." message in the command prompt, pressing Ctl-C in the command prompt render_window may print backed up error messages and Python exception information.
 
 In the directory listing in the browser, click "project-name.html".
 

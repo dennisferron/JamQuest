@@ -11,8 +11,7 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 public:
-	RenderWindow();
-	void create(const char* p_title, int p_w, int p_h);
+	RenderWindow(SDL_Window* window);
 	SDL_Texture* loadTexture(const char* p_filePath);
 	void clear();
 	void render(Entity& p_entity);
@@ -21,5 +20,4 @@ public:
 	void render(float p_x, float p_y, const char* p_text, TTF_Font* font, SDL_Color textColor);
 	void renderCenter(float p_x, float p_y, const char* p_text, TTF_Font* font, SDL_Color textColor);
 	void display();
-	void cleanUp();
 };

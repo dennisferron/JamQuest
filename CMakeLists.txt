@@ -6,12 +6,16 @@ cmake_minimum_required(VERSION 3.5.1)
 # in a subdir.  I don't know if they're needed.
 #list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 
-# Add all c source files under the src directory
-file(GLOB SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME}
+        src/entity.cpp
+        src/ground.cpp
+        src/groundtile.cpp
+        src/main.cpp
+        src/player.cpp
+        src/renderwindow.cpp CursorCustodian.cpp CursorCustodian.hpp)
 
 # Add all headers files under the include directory
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} PRIVATE . include)
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1")
