@@ -122,6 +122,34 @@ code I started from, I found I had to add the following:
 which is weird because the Makefile the example came with (before I ported to CMakeLists.txt)
 did not contain this flag in its command lines.  But this was what it needed, and it worked.
 
+### SDL Args for Emscripten
+
+Emscripten uses a built-in SDL.  Some other common libraries are also built-in.  These are enabled by passing a "-s USE_FOO_LIB=ver" argument for each library.  In certain cases the multiple different -s arguments could get incorrectly folded together by configuration or build steps; preceding the list of them with "SHELL: " tells the relevant tool not to do this.
+
+The "-s" args should be passed in both the compilation and linking steps; it enables both the relevant include files and the static libs.  I set a CMake variable, "EMSCRIPTEN_SDL_OPTS", for this and use it with "target_compile_options" and "target_link_options" (_not_ "target_link_libraries").
+
+(There are additional Emscripten linker options to pass in the target_compile_options such as "--preload-file" and "--emrun".  I don't put those in "EMSCRIPTEN_SDL_OPTS" since they're only relevant to linking.  Instead, I pass those options separately in target_link_options.)
+
+Example:
+```
+if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    set(CMAKE_EXECUTABLE_SUFFIX .html)
+
+    set(EMSCRIPTEN_SDL_OPTS
+"SHELL: -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png] -s USE_SDL_GFX=2")
+
+    target_compile_options(${PROJECT_NAME} PUBLIC
+            "${EMSCRIPTEN_SDL_OPTS}")
+    target_link_options(${PROJECT_NAME} PUBLIC
+            "${EMSCRIPTEN_SDL_OPTS}"
+            --preload-file ../res
+            --emrun)
+else()
+	# Native compile and link options
+	# ...
+endif()
+```
+
 ## Project Organization
 
 ### Resources folders
@@ -150,6 +178,43 @@ reliably with CMake.  One of the subtle issues is that a CMake file copy
 command executes at configure time, but we want to re-sync asset files
 at build time not only configure time.  (This would be fine if the assets
 were truly readonly, but presumably they might be changed in development.)
+
+## Code Changes for Emscripten
+
+### Main Loop
+
+You have to modify a game's main loop to allow Emscripten to yield control, or else you'll only get a black screen in the browser.
+
+Add the appropriate header(s) at the very top of main.cpp:
+```
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
+```
+
+Implement the content of your main loop as a function which executes one frame of the game loop when called.  Then use an #ifdef to select between running the while loop manually (native) or pass it as a callback to Emscripten.
+```
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg(
+        [](void* arg)
+        {
+            static_cast<CursorCustodian*>(arg)->gameLoop();
+        },
+        &cursor_game,
+        0,
+        1
+    );
+#else
+	while (cursor_game.is_game_running())
+	{
+    	cursor_game.gameLoop();
+    	SDL_Delay(16);
+	}
+#endif
+```
+
+The "emscripten_set_main_loop_arg" form allows passing the root "Game" or "Application" object which we then static_cast in the lambda to call the member function.  If your game doesn't use a root object to hold all state data (if it uses global variables instead), there's another form "emscripten_set_main_loop" that just calls a namespace-level function.
 
 ## Credits
 Cursor Custodian was used as example for code and project organization.
