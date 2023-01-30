@@ -152,6 +152,33 @@ endif()
 
 ## Project Organization
 
+### Super Build
+
+Most games will depend on many 3rd party libraries.  I refer to issues concerning building dependencies and how the game project finds them as "the super build".  Many large projects choose to have the source control repository and/or the game's build scripts contain or download dependencies into a subfolder of the project.  We might call this the "batteries included" approach.  Another strategy is to rely on a package manager and install them in the system.  (One might employ a mixture of the two strategies on a case-by-case basis.)
+
+I considered both approaches for Jam Quest, and I didn't like either one.
+
+The problem with going full "batteries included" is if every game project contains a copy of common dependencies, that's going to eat up hard disk space fast.  I'd also be building a lot of 
+large libraries multiple times.
+
+On the other hand the package manager approach breaks down for Emscripten, which can't use system libraries.  Sometimes even for the native build a particular dependency might not "like" the MSys2/MinGW installed package and work better with a built from source version.  Or, sometimes the opposite is true - the MSys2/MinGW package contains Windows-specific fixes that haven't been upstreamed.
+
+Either way I feel it's important to have fine-grained control by building dependencies from source where practical (and the Emscripten build type requires it anyway), but I don't want to download or build them more than once.  I considered learning the Conan package manager to set this up, as this seems to be a supported use-case.  However, what concerned me is CMake is itself a sky-high abstraction atop a Tower of Babel.  Would parking the Conan UFO next to it, with a metacircular relationship (Conan runs CMake, CMake scripts invoke Conan) help matters?
+
+I decided to spend some time trying to set something up with straight CMake before jumping down the Conan rabbit hole.  It turns out, yes, it is possible to set up a super build development workflow with just CMake.  (Conan would assist with replicating this build environment on other machines - but there's just me working on this project on one laptop.)  Moreover I had to overcome some CMake- and Emscripten- related problems that, if I'd muddied the waters by also including Conan in the mix, I might never have isolated enough to understand what was actually going on.
+
+The super build organization strategy I hit upon was to create "Common" folder at the root of CLionProjects folder, and "install" all of the dependency libraries (that I build) into this folder.  Since each build type (or architecture) must be kept separate, I have three install folders:  Common/cmake-install-debug-mingw, Common/cmake-install-release-mingw, and Common/cmake-install-release-emscripten.
+
+One reason to import dependencies from an install folder, rather than referencing the dependency projects' cmake-build-* folders directly, is the possibility of not needing to manually set "libFOO_DIR" paths for every separate library.  We can just point find_package at the root of the appropriate Common/cmake-install-* folder, and it will find the dependencies if they are installed there.
+
+As mentioned, I did encounter some difficulties getting this to work.  Setting the installDir (in CMakePresets.json) automatically adds that same folder to the list of folders CMake searches.  However I found that is not enough to rely on.  Problem #1 was the install directory is at a lower priority, apparently, than system folders, and the native builds were finding MinGW LibXml2 from MSys2 instead of the LibXml2 I built and installed to Common/cmake-install-*.  (I wanted the reverse; Common/cmake-install-* should have priority.)  Problem #2 is the Emscripten build wasn't finding my Common/cmake-install-* dependencies at all.
+
+Claus Klein on the CMake Discourse suggested setting CMAKE_PREFIX_PATH to the install directory.  This fixed problem #1; now the native builds prioritized libraries found in my install directory.  It had no effect on problem #2.  After eliminating all else, I dug into the Emscripten toolchain cmake script, and found it sets CMAKE_FIND_ROOT_PATH_MODE_* variables to ONLY.  I also confirmed with CMAKE_FIND_DEBUG_MODE that the Emscripten build was only looking in ".../emscripten/cache/sysroot/..."
+
+The remedy is or should have been to set CMAKE_FIND_ROOT_PATH to the install folder, however initially this too had no effect on problem #2.  Through trial and error I discovered it is because I had been using a relative path, and it only works if you give an absolute path.  So I have CMAKE_PREFIX_PATH as relative and CMAKE_FIND_ROOT_PATH pointing to the same location, but absolute.  (CMAKE_PRESET_PATH may be redundant at this point; I'm not sure.)
+
+I'm using CMakePresets.json and some slick inheritance and macro tricks to set this up for all build types with just one schema (see "common-presets" in CMakePresets.json).  The trick is I named my presets "debug-mingw", "release-mingw", and "release-emscripten" which is the same as the part of the install folder name after "cmake-install-...".  Then you can just refer to "Common/cmake-install-${presetName}" and get the appropriate folder for the build type.  (This works even when used in the base preset because ${presetName} resolves to the most-derived.)
+
 ### Resources folders
 
 In simple projects, it might make sense to just reference the resources

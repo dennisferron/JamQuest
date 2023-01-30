@@ -4,13 +4,18 @@
 #endif
 
 #include "CursorCustodian.hpp"
+#include "TmxExample.hpp"
 
 #include <SDL2/SDL.h>
 
+int main2(int argc, char* args[]);
 
 int main(int argc, char* args[])
 {
-    CursorCustodian cursor_game;
+    //return main2(argc, args);
+
+    //CursorCustodian application;
+    TmxExample application;
 
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop_arg(
@@ -18,14 +23,14 @@ int main(int argc, char* args[])
         {
             static_cast<CursorCustodian*>(arg)->gameLoop();
         },
-        &cursor_game,
+        &application,
         0,
         1
     );
 #else
-	while (cursor_game.is_game_running())
+	while (application.is_game_running())
 	{
-    	cursor_game.gameLoop();
+    	application.gameLoop();
     	SDL_Delay(16);
 	}
 #endif

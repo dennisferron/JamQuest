@@ -2,9 +2,14 @@ project(JamQuest)
 
 cmake_minimum_required(VERSION 3.5.1)
 
-# The Basic SDL tutorial I saw had FindSDL2*.cmake scripts
-# in a subdir.  I don't know if they're needed.
-#list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
+#set(CMAKE_FIND_DEBUG_MODE TRUE)
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+
+# Library paths
+#        "LibXml2_DIR": "../Common/cmake-install-${presetName}/lib/cmake/libxml2-2.11.0",
+#        "tmx_DIR": "../Common/cmake-install-${presetName}/lib/cmake/tmx"
+
+find_package(tmx REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
         src/entity.cpp
@@ -12,10 +17,14 @@ add_executable(${PROJECT_NAME}
         src/groundtile.cpp
         src/main.cpp
         src/player.cpp
-        src/renderwindow.cpp CursorCustodian.cpp CursorCustodian.hpp)
+        src/renderwindow.cpp
+        tmx_sdl_example/tmx_sdl_example.cpp
+        CursorCustodian.cpp CursorCustodian.hpp SdlApplication.cpp SdlApplication.hpp TmxExample.cpp TmxExample.hpp TileGridLayer.cpp TileGridLayer.hpp CompositionLayer.cpp CompositionLayer.hpp ObjectLayer.cpp ObjectLayer.hpp ImageLayer.cpp ImageLayer.hpp LayerGroup.cpp LayerGroup.hpp MapObject.cpp MapObject.hpp Camera2D.cpp Camera2D.hpp)
 
 # Add all headers files under the include directory
 target_include_directories(${PROJECT_NAME} PRIVATE . include)
+
+target_link_libraries(${PROJECT_NAME} tmx)
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1")

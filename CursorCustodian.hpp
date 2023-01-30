@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SdlApplication.hpp"
+
 #include "renderwindow.h"
 #include "player.h"
 
@@ -7,20 +9,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
 
-class CursorCustodian
+class CursorCustodian : public SdlApplication
 {
 private:
-    const int SCREEN_WIDTH = 800;
-    const int SCREEN_HEIGHT = 480;
-
     const int ALIVE = 0;
     const int CURSOR_DEATH = 1;
     const int HOLE_DEATH = 2;
-
-    const Uint8 *keyState;
-
-    SDL_Window* window;
-    RenderWindow* render_window;
 
     std::vector<SDL_Texture*> playerTex;
     SDL_Texture* groundTex[4];
@@ -42,7 +36,6 @@ private:
     Mix_Chunk* hitSfx;
     Mix_Chunk* clickSfx;
 
-    bool gameRunning = true;
     bool playedDeathSFX = false;
     bool mainMenu = true;
 
@@ -55,6 +48,5 @@ public:
     CursorCustodian();
     ~CursorCustodian();
 
-    void gameLoop();
-    bool is_game_running() const { return gameRunning; }
+    void gameLoop() override;
 };

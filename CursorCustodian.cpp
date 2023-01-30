@@ -8,24 +8,6 @@
 
 CursorCustodian::CursorCustodian()
 {
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    IMG_Init(IMG_INIT_PNG);
-    TTF_Init();
-
-    window = SDL_CreateWindow("Cursor Custodian",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN);
-
-    if (window == NULL)
-        std::cout << "Window failed to init. Error: " << SDL_GetError() << std::endl;
-
-    render_window = new RenderWindow(window);
-
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-
-    srand((unsigned)time(0));
-
     playerTex.push_back(render_window->loadTexture("res/textures/player/player_0.png"));
     playerTex.push_back(render_window->loadTexture("res/textures/player/player_1.png"));
     playerTex.push_back(render_window->loadTexture("res/textures/player/player_2.png"));
@@ -64,13 +46,10 @@ CursorCustodian::~CursorCustodian()
     delete player;
     delete ground;
 
-    SDL_DestroyWindow(window);
     TTF_CloseFont(font32);
     TTF_CloseFont(font32_outline);
     TTF_CloseFont(font24);
     TTF_CloseFont(font16);
-    TTF_Quit();
-    SDL_Quit();
 }
 
 void CursorCustodian::reset()

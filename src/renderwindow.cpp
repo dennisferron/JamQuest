@@ -9,10 +9,9 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
 
-RenderWindow::RenderWindow(SDL_Window* window)
-    : window(window)
+RenderWindow::RenderWindow(SDL_Window* window, SDL_Renderer* renderer)
+    : window(window), renderer(renderer)
 {
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
 
 

@@ -11,7 +11,7 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 public:
-	RenderWindow(SDL_Window* window);
+	RenderWindow(SDL_Window* window, SDL_Renderer* renderer);
 	SDL_Texture* loadTexture(const char* p_filePath);
 	void clear();
 	void render(Entity& p_entity);
