@@ -22,6 +22,9 @@ SdlApplication::SdlApplication()
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Only used by CursorCustodian, not used by JamQuest.
     render_window = new RenderWindow(window, renderer);
 
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);

@@ -49,7 +49,17 @@ void TmxExample::gameLoop()
     tmx_col_bytes col = tmx_col_to_bytes(map->backgroundcolor);
     SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
     SDL_RenderClear(renderer);
-    root_layer_group->render(renderer, {});
+
+    int viewport_w;
+    int viewport_h;
+    SDL_RenderGetLogicalSize(renderer, &viewport_w, &viewport_h);
+
+    Camera2D camera(viewport_w, viewport_h);
+
+    camera.set_extent({400, 240});
+    camera.set_center({800, 480});
+
+    root_layer_group->render(renderer, camera);
 
     SDL_RenderPresent(renderer);
 }
