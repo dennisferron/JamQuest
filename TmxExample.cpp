@@ -56,7 +56,7 @@ void TmxExample::gameLoop()
 
     Camera2D camera(viewport_w, viewport_h);
 
-    camera.set_extent({400, 240});
+    camera.set_extent({1600, 960});
     camera.set_center({800, 480});
 
     root_layer_group->render(renderer, camera);

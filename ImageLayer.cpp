@@ -9,5 +9,5 @@ ImageLayer::ImageLayer(const tmx_map* map, const tmx_layer* layer)
 
 void ImageLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    SDL_RenderCopy(renderer, texture, NULL, &region);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
 }

@@ -11,7 +11,23 @@ RectangleMapObject::RectangleMapObject(const SDL_Rect& rect)
 
 void RectangleMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    SDL_RenderDrawRect(renderer, &rect);
+    // And then convert to viewport for dest rect.
+    Vector2D pos_vp = camera.world_to_viewport({
+        (double)rect.x, (double)rect.y
+    });
+
+    // We also need to map source size to destination size.
+    Vector2D sz_vp = camera.size_in_viewport({
+        (double)rect.w, (double)rect.h
+    });
+
+    SDL_Rect rect_vp =
+    {
+        (int)pos_vp.x, (int)pos_vp.y,
+        (int)sz_vp.x, (int)sz_vp.y
+    };
+
+    SDL_RenderDrawRect(renderer, &rect_vp);
 }
 
 RectangleMapObject::RectangleMapObject(tmx_object const* obj)
@@ -19,21 +35,21 @@ RectangleMapObject::RectangleMapObject(tmx_object const* obj)
 {
 }
 
-PolyMapObject::PolyMapObject(SDL_Point const& pos, const std::vector<SDL_Point>& points, bool closed)
+PolyMapObject::PolyMapObject(Vector2D const& pos, const std::vector<Vector2D>& points, bool closed)
     : pos(pos), points(points), closed(closed)
 {
 }
 
-std::vector<SDL_Point> PolyMapObject::conv_points(const tmx_shape* shape)
+std::vector<Vector2D> PolyMapObject::conv_points(const tmx_shape* shape)
 {
-    std::vector<SDL_Point> result;
+    std::vector<Vector2D> result;
 
     for (int i=0; i<shape->points_len; i++)
     {
         result.push_back(
             {
-                (int)shape->points[i][0],
-                (int)shape->points[i][1]
+                (double)shape->points[i][0],
+                (double)shape->points[i][1]
             });
     }
 
@@ -41,18 +57,21 @@ std::vector<SDL_Point> PolyMapObject::conv_points(const tmx_shape* shape)
 }
 
 PolyMapObject::PolyMapObject(const tmx_object* obj) :
-    pos({(int)obj->x, (int)obj->y}),
+    pos({(double)obj->x, (double)obj->y}),
     points(conv_points(obj->content.shape)),
     closed(obj->obj_type == OT_POLYGON)
 {
 }
 
-void PolyMapObject::draw_line(SDL_Renderer* renderer, const Camera2D& camera, const SDL_Point& p0, const SDL_Point& p1) const
+void PolyMapObject::draw_line(SDL_Renderer* renderer, const Camera2D& camera, const Vector2D& p0, const Vector2D& p1) const
 {
-    int x0 = pos.x + p0.x;
-    int y0 = pos.y + p0.y;
-    int x1 = pos.x + p1.x;
-    int y1 = pos.y + p1.y;
+    Vector2D p0_vp = camera.world_to_viewport(pos + p0);
+    Vector2D p1_vp = camera.world_to_viewport(pos + p1);
+
+    int x0 = (int)p0_vp.x;
+    int y0 = (int)p0_vp.y;
+    int x1 = (int)p1_vp.x;
+    int y1 = (int)p1_vp.y;
     SDL_RenderDrawLine(renderer, x0, y0, x1, y1);
 }
 

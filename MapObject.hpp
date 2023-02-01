@@ -30,16 +30,16 @@ public:
 class PolyMapObject : public MapObject
 {
 private:
-    SDL_Point pos;
-    std::vector<SDL_Point> points;
+    Vector2D pos;
+    std::vector<Vector2D> points;
     bool closed;
 
     void draw_line(SDL_Renderer* renderer, Camera2D const& camera,
-                   SDL_Point const& p0, SDL_Point const& p1) const;
+                   Vector2D const& p0, Vector2D const& p1) const;
 
-    static std::vector<SDL_Point> conv_points(tmx_shape const* shape);
+    static std::vector<Vector2D> conv_points(tmx_shape const* shape);
 public:
-    PolyMapObject(SDL_Point const& pos, std::vector<SDL_Point> const& points, bool closed);
+    PolyMapObject(Vector2D const& pos, std::vector<Vector2D> const& points, bool closed);
     PolyMapObject(tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
 };
