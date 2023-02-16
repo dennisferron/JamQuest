@@ -43,6 +43,28 @@ inline Vector2D operator /(Vector2D const& a, double b)
     return { a.x / b, a.y / b };
 }
 
+inline Vector2D operator *(double a, Vector2D const& b)
+{
+    return { a * b.x, a * b.y };
+}
+
+inline double sqrt_sign(double x)
+{
+    if (x < 0)
+        return -std::sqrt(-x);
+    else
+        return std::sqrt(x);
+}
+
+inline Vector2D sqrt_sign(Vector2D const& a)
+{
+    return { sqrt_sign(a.x), sqrt_sign(a.y) };
+}
+
+inline Vector2D abs(Vector2D const& a)
+{
+    return { fabs(a.x), fabs(a.y) };
+}
 
 class Camera2D
 {
@@ -84,7 +106,6 @@ public:
 
     Vector2D world_to_viewport(Vector2D const& w) const;
     Vector2D viewport_to_world(Vector2D const& v) const;
-    Vector2D size_in_viewport(Vector2D const& size_w) const;
 
     Vector2D const& get_view_size() const
         { return view_size; }

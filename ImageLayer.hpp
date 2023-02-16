@@ -8,7 +8,8 @@ class ImageLayer : public CompositionLayer
 {
 private:
     SDL_Texture* texture;
-    SDL_Rect region;
+    Vector2D pos_w;
+    Vector2D size_w;
 
 public:
     ImageLayer(tmx_map const* map, tmx_layer const* layer);

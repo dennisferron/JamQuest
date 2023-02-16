@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CompositionLayer.hpp"
+#include "Animation.hpp"
 
 #include <vector>
 #include <memory>
@@ -10,13 +11,6 @@ struct TileSet
 {
     Vector2D tile_size;
     SDL_Texture* image;
-};
-
-struct AnimationFrame
-{
-    SDL_Texture* source_image;
-    SDL_Rect source_region;
-    int duration;  // in milliseconds
 };
 
 // A tile doesn't know its size because all tiles in the
@@ -66,8 +60,6 @@ private:
 
     // Map a viewport logical coordinate to a (fractional!) tile coordinate.
     Vector2D viewport_to_tile(Camera2D const& camera, Vector2D const& vp) const;
-
-    Vector2D tile_to_viewport(std::size_t col, std::size_t row) const;
 
 public:
     TileGridLayer(tmx_map const* map, tmx_layer const* layer);

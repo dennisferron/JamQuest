@@ -20,9 +20,9 @@ ObjectLayer::ObjectLayer(const tmx_map* map, const tmx_layer* layer)
 //                case OT_ELLIPSE:
 //                    objects.push_back(new EllipseMapObject(head));
 //                    break;
-//                case OT_TILE:
-//                    objects.push_back(new TileMapObject(head));
-//                    break;
+                case OT_TILE:
+                    objects.push_back(new TileSpriteMapObject(map, head));
+                    break;
 //                case OT_POINT:
 //                    break;
 //                case OT_TEXT:

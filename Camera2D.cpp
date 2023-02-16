@@ -15,8 +15,3 @@ Vector2D Camera2D::viewport_to_world(const Vector2D& v) const
 {
     return extent * (v - view_size/2) / view_size + center;
 }
-
-Vector2D Camera2D::size_in_viewport(const Vector2D& size_w) const
-{
-    return view_size * size_w / extent;
-}

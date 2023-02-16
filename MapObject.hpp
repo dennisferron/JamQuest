@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Camera2D.hpp"
+#include "Animation.hpp"
 
 #include <tmx.h>
 #include <SDL2/SDL.h>
@@ -56,12 +57,19 @@ public:
 };
 
 // Used for tiles displayed as map objects
-class TileMapObject : public MapObject
+class TileSpriteMapObject : public MapObject
 {
 private:
-    // TODO: implement this
+    std::vector<AnimationFrame> frames;
+    Vector2D ctr_pos_w;
+    Vector2D obj_size_w;
+    Vector2D ofs_ctr_obj;
+    double angle_degrees = 0;
+    SDL_RendererFlip flip_flags = SDL_FLIP_NONE;
+
+    static Vector2D calc_alignment_ofs(tmx_map_orient map_orient, tmx_obj_alignment obj_align, double obj_w, double obj_h);
 
 public:
-    TileMapObject(tmx_object const* obj);
+    TileSpriteMapObject(tmx_map const* map, tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
 };

@@ -76,25 +76,42 @@ void TileGridLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
                 double src_h = frame.source_region.h;
 
                 // Calculate upper left of tile col,row in world coordinates.
-                // plus a correction factor for differently sized tile image
-                // (c.f. assumes we want to keep tile center in same place).
-                Vector2D tile_pos_w = {
+                // plus a correction factor if image size different from tiles.
+                // (The correction assumes we want to keep tile center in same place.)
+                Vector2D tile_ul_w = {
                         col * tl_sz.x + (tl_sz.x-src_w)/2,
                         row * tl_sz.y + (tl_sz.y-src_h)/2
                 };
 
-                // And then convert to viewport for dest rect.
-                Vector2D tile_pos_vp = camera.world_to_viewport(tile_pos_w);
+                // Calculate the bottom right from upper left, since camera
+                // is based on points not sizes.
+                Vector2D tile_br_w = tile_ul_w + Vector2D {src_w, src_h};
 
-                // We also need to map source size to destination size.
-                Vector2D dest_sz_vp = camera.size_in_viewport({src_w, src_h});
+                // And then convert these to viewport for the dest rect.
+                Vector2D tile_ul_vp = camera.world_to_viewport(tile_ul_w);
+                Vector2D tile_br_vp = camera.world_to_viewport(tile_br_w);
+                Vector2D dest_sz_vp = tile_br_vp - tile_ul_vp;
 
                 SDL_Rect dest_rect = {
-                        (int)tile_pos_vp.x,
-                        (int)tile_pos_vp.y,
+                        (int)tile_ul_vp.x,
+                        (int)tile_ul_vp.y,
                         (int)dest_sz_vp.x,
                         (int)dest_sz_vp.y
                 };
+
+                // It's possible the camera transform could have flipped
+                // the left/right or upper/lower designations, so
+                // normalize the rect if width or height are negative.
+                if (dest_rect.w < 0)
+                {
+                    dest_rect.w = -dest_rect.w;
+                    dest_rect.x -= dest_rect.w;
+                }
+                if (dest_rect.h < 0) // not an else if
+                {
+                    dest_rect.h = -dest_rect.h;
+                    dest_rect.y -= dest_rect.h;
+                }
 
                 SDL_RenderCopy(renderer, frame.source_image, &frame.source_region, &dest_rect);
             }
@@ -123,14 +140,4 @@ Vector2D TileGridLayer::viewport_to_tile(const Camera2D& camera, const Vector2D&
     Vector2D vp_in_world = camera.viewport_to_world(vp);
     Vector2D world_to_tile = vp_in_world / tile_size_in_world;
     return world_to_tile;
-}
-
-Vector2D TileGridLayer::tile_to_viewport(std::size_t col, std::size_t row) const
-{
-    Vector2D tile_to_world =
-    {
-            col * tile_size_in_world.x,
-            row * tile_size_in_world.y
-    };
-
 }
