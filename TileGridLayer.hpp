@@ -23,8 +23,7 @@ struct Tile
 struct Cell
 {
     Tile const* tile = nullptr;
-    bool flip_horizontal = false;
-    bool flip_vertical = false;
+    SDL_RendererFlip flip_flags = SDL_FLIP_NONE;
 };
 
 class TileGridLayer : public CompositionLayer

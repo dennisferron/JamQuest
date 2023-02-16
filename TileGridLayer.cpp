@@ -11,9 +11,13 @@ TileGridLayer::TileGridLayer(tmx_map const* map, tmx_layer const* layer)
         for (unsigned int col = 0; col < map_width; col++)
         {
             unsigned int cell_index = (row * map_width) + col;
-            unsigned int tile_id = layer->content.gids[cell_index];
-            unsigned int gid = tile_id & TMX_FLIP_BITS_REMOVAL;
-            unsigned int flags = tile_id & ~TMX_FLIP_BITS_REMOVAL;
+            unsigned int raw_gid = layer->content.gids[cell_index];
+            unsigned int gid = raw_gid & TMX_FLIP_BITS_REMOVAL;
+
+            unsigned int flags = raw_gid & ~TMX_FLIP_BITS_REMOVAL;
+            cells[cell_index].flip_flags = static_cast<SDL_RendererFlip>(
+                    (flags & TMX_FLIPPED_HORIZONTALLY ? (int)SDL_FLIP_HORIZONTAL : 0)
+                    |   (flags & TMX_FLIPPED_VERTICALLY ? (int)SDL_FLIP_VERTICAL : 0));
 
             tmx_tile const* tile = map->tiles[gid];
             if (tile != NULL)
@@ -113,7 +117,14 @@ void TileGridLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
                     dest_rect.y -= dest_rect.h;
                 }
 
-                SDL_RenderCopy(renderer, frame.source_image, &frame.source_region, &dest_rect);
+                SDL_RenderCopyEx(
+                        renderer,
+                        frame.source_image,
+                        &frame.source_region,
+                        &dest_rect,
+                        0,
+                        nullptr,
+                        cells[cell_index].flip_flags );
             }
         }
     }
