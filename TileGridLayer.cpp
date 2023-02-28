@@ -22,26 +22,11 @@ TileGridLayer::TileGridLayer(tmx_map const* map, tmx_layer const* layer)
             tmx_tile const* tile = map->tiles[gid];
             if (tile != NULL)
             {
-                tmx_tileset const* tileset = tile->tileset;
+                Tile* out_tile = &tiles[gid];
 
-                AnimationFrame frame;
+                if (out_tile->frames.empty())
+                    out_tile->frames = get_animation_frames(tile);
 
-                frame.source_image =
-                    reinterpret_cast<SDL_Texture*>(
-                        tile->image?
-                        tile->image->resource_image :
-                        tileset->image->resource_image);
-
-                frame.source_region =
-                {
-                    static_cast<int>(tile->ul_x),
-                    static_cast<int>(tile->ul_y),
-                    static_cast<int>(tileset->tile_width),
-                    static_cast<int>(tileset->tile_height)
-                };
-
-                Tile* out_tile = new Tile();
-                out_tile->frames.push_back(frame);
                 cells[cell_index].tile = out_tile;
             }
         }
@@ -68,7 +53,7 @@ void TileGridLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
             if (tile != nullptr)
             {
                 // Determine which animation frame to display.
-                AnimationFrame const& frame = tile->frames[0];
+                AnimationFrame const& frame = tile->frames[tile->cur_frame];
 
                 // The size of the frame image could in theory
                 // be different from the map tile size (spacing);
@@ -151,4 +136,29 @@ Vector2D TileGridLayer::viewport_to_tile(const Camera2D& camera, const Vector2D&
     Vector2D vp_in_world = camera.viewport_to_world(vp);
     Vector2D world_to_tile = vp_in_world / tile_size_in_world;
     return world_to_tile;
+}
+
+void TileGridLayer::update(uint32_t delta_ms)
+{
+    for (auto& kv : tiles)
+    {
+        kv.second.update(delta_ms);
+    }
+}
+
+void Tile::update(uint32_t delta_ms)
+{
+    uint32_t all_frames_ms = 0;
+    for (auto const& fr : frames)
+        all_frames_ms += fr.duration_ms;
+
+    if (all_frames_ms > 0)
+    {
+        fractional_ms += delta_ms;
+        while (fractional_ms >= frames[cur_frame].duration_ms)
+        {
+            fractional_ms -= frames[cur_frame].duration_ms;
+            cur_frame = (cur_frame + 1) % frames.size();
+        }
+    }
 }

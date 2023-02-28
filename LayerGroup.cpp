@@ -38,3 +38,9 @@ void LayerGroup::render(SDL_Renderer* renderer, const Camera2D& camera) const
     for (CompositionLayer const* layer : children)
         layer->render(renderer, camera);
 }
+
+void LayerGroup::update(uint32_t delta_ms)
+{
+    for (CompositionLayer* layer : children)
+        layer->update(delta_ms);
+}

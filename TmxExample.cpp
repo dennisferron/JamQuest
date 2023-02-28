@@ -32,6 +32,8 @@ TmxExample::~TmxExample()
 
 void TmxExample::gameLoop()
 {
+    uint32_t elapsed_time_ms = get_elapsed_time();
+
     SDL_Event ev;
 
     while (SDL_PollEvent(&ev))
@@ -46,6 +48,8 @@ void TmxExample::gameLoop()
         }
     };
 
+    root_layer_group->update(elapsed_time_ms);
+
     tmx_col_bytes col = tmx_col_to_bytes(map->backgroundcolor);
     SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
     SDL_RenderClear(renderer);
@@ -57,7 +61,7 @@ void TmxExample::gameLoop()
     Camera2D camera(viewport_w, viewport_h);
 
     camera.set_extent({1000, 600});
-    camera.set_center({800, 200});
+    camera.set_center({420, 280});
 
     root_layer_group->render(renderer, camera);
 

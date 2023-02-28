@@ -244,5 +244,6 @@ Implement the content of your main loop as a function which executes one frame o
 The "emscripten_set_main_loop_arg" form allows passing the root "Game" or "Application" object which we then static_cast in the lambda to call the member function.  If your game doesn't use a root object to hold all state data (if it uses global variables instead), there's another form "emscripten_set_main_loop" that just calls a namespace-level function.
 
 ## Credits
-Cursor Custodian was used as example for code and project organization.
+Cursor Custodian by PolyMars was used as example for code and project organization.
 Ground tiles from Kenney Pixel Platformer farm expansion.
+TMX C Loader from https://github.com/baylej/tmx to load Tiled maps.

@@ -21,6 +21,10 @@ protected:
 
     bool gameRunning = true;
 
+    uint32_t lastTicksTime;
+
+    uint32_t get_elapsed_time();
+
 public:
     SdlApplication();
     ~SdlApplication();

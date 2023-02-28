@@ -30,6 +30,7 @@ SdlApplication::SdlApplication()
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
     srand((unsigned)time(0));
+    lastTicksTime = SDL_GetTicks();
 }
 
 SdlApplication::~SdlApplication()
@@ -37,4 +38,12 @@ SdlApplication::~SdlApplication()
     SDL_DestroyWindow(window);
     TTF_Quit();
     SDL_Quit();
+}
+
+uint32_t SdlApplication::get_elapsed_time()
+{
+    uint32_t currTime = SDL_GetTicks();
+    uint32_t elapsedTime = currTime - lastTicksTime;
+    lastTicksTime = currTime;
+    return elapsedTime;
 }

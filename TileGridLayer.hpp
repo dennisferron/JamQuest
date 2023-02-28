@@ -3,21 +3,20 @@
 #include "CompositionLayer.hpp"
 #include "Animation.hpp"
 
+#include <tmx.h>
 #include <vector>
 #include <memory>
-#include <tmx.h>
-
-struct TileSet
-{
-    Vector2D tile_size;
-    SDL_Texture* image;
-};
+#include <map>
 
 // A tile doesn't know its size because all tiles in the
 // layer have the same dimensions.
 struct Tile
 {
     std::vector<AnimationFrame> frames;
+    int cur_frame = 0;
+    int fractional_ms = 0;
+
+    void update(uint32_t delta_ms);
 };
 
 struct Cell
@@ -30,6 +29,7 @@ class TileGridLayer : public CompositionLayer
 {
 private:
     std::vector<Cell> cells;
+    std::map<uint32_t, Tile> tiles;
 
     // A layer can be offset from (0,0) world, e.g. for parallax.
     Vector2D origin;
@@ -63,4 +63,5 @@ private:
 public:
     TileGridLayer(tmx_map const* map, tmx_layer const* layer);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
+    void update(uint32_t delta_ms) override;
 };

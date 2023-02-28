@@ -14,4 +14,5 @@ private:
 public:
     LayerGroup(tmx_map const* map, tmx_layer const* list_head);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
+    void update(uint32_t delta_ms) override;
 };

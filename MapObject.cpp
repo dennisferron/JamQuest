@@ -142,9 +142,8 @@ TileSpriteMapObject::TileSpriteMapObject(tmx_map const* map, const tmx_object* o
 
     unsigned int gid = raw_gid & TMX_FLIP_BITS_REMOVAL;
     tmx_tile const* tile = map->tiles[gid];
-    tmx_tileset const* tileset = tile->tileset;
 
-    tmx_obj_alignment alignment = tileset->objectalignment;
+    tmx_obj_alignment alignment = tile->tileset->objectalignment;
 
     // Default is bottom left except in ISO mode.
     if (alignment == OA_NONE && map->orient == O_ISO)
@@ -180,20 +179,7 @@ TileSpriteMapObject::TileSpriteMapObject(tmx_map const* map, const tmx_object* o
             ofs_ctr_obj.y = 0.0;
     }
 
-    AnimationFrame frame;
-
-    frame.source_image =
-            reinterpret_cast<SDL_Texture*>(
-                    tileset->image->resource_image);
-
-    frame.source_region = {
-        static_cast<int>(tile->ul_x),
-        static_cast<int>(tile->ul_y),
-        static_cast<int>(tileset->tile_width),
-        static_cast<int>(tileset->tile_height)
-    };
-
-    frames.push_back(frame);
+    frames = get_animation_frames(tile);
 }
 
 void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const

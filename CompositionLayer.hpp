@@ -9,4 +9,5 @@ class CompositionLayer
 public:
     virtual ~CompositionLayer() = 0;
     virtual void render(SDL_Renderer* renderer, Camera2D const& camera) const = 0;
+    virtual void update(uint32_t delta_ms);
 };
