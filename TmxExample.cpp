@@ -1,11 +1,21 @@
 #include "TmxExample.hpp"
 
+#include <stdexcept>
+#include <sstream>
+#include <iostream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 SDL_Renderer* TmxExample::texture_loader_renderer = nullptr;
 
 void* TmxExample::SDL_tex_loader(const char *path)
 {
-    return IMG_LoadTexture(texture_loader_renderer, path);
+    void* result = IMG_LoadTexture(texture_loader_renderer, path);
+    if (!result)
+    {
+        std::cout << "Failed to load texture: " << path << std::endl;
+    }
+    return result;
 }
 
 TmxExample::TmxExample()
@@ -16,10 +26,21 @@ TmxExample::TmxExample()
     tmx_img_load_func = SDL_tex_loader;
     tmx_img_free_func = (void (*)(void*))SDL_DestroyTexture;
 
-    map = tmx_load("res/maps/objecttemplates.tmx");
+    std::string map_file = "/res/maps/objecttemplates.tmx";
+    map = tmx_load(map_file.c_str());
     if (!map)
     {
-        tmx_perror("Cannot load map");
+        std::stringstream msg;
+        msg << "Unable to load TMX map file "
+            << map_file;
+        tmx_perror(msg.str().c_str());
+
+        std::string path = "res/maps";
+        std::cout << "Files in directory: " << path << std::endl;
+        for (const auto & entry : fs::directory_iterator(path))
+            std::cout << entry.path() << std::endl;
+
+        throw std::runtime_error(msg.str());
     }
 
     root_layer_group = new LayerGroup(map, map->ly_head);

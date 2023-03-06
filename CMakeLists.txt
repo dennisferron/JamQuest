@@ -35,7 +35,7 @@ if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 
     #LIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
     set(EMSCRIPTEN_SDL_OPTS
-"SHELL: -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png] -s USE_SDL_GFX=2")
+"SHELL: -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png,jpg] -s USE_SDL_GFX=2")
 
     target_compile_options(${PROJECT_NAME} PUBLIC
             "${EMSCRIPTEN_SDL_OPTS}")
