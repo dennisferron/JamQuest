@@ -31,16 +31,16 @@ public:
 class PolyMapObject : public MapObject
 {
 private:
-    Vector2D pos;
-    std::vector<Vector2D> points;
+    Vector2Df pos;
+    std::vector<Vector2Df> points;
     bool closed;
 
     void draw_line(SDL_Renderer* renderer, Camera2D const& camera,
-                   Vector2D const& p0, Vector2D const& p1) const;
+                   Vector2Df const& p0, Vector2Df const& p1) const;
 
-    static std::vector<Vector2D> conv_points(tmx_shape const* shape);
+    static std::vector<Vector2Df> conv_points(tmx_shape const* shape);
 public:
-    PolyMapObject(Vector2D const& pos, std::vector<Vector2D> const& points, bool closed);
+    PolyMapObject(Vector2Df const& pos, std::vector<Vector2Df> const& points, bool closed);
     PolyMapObject(tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
 };
@@ -61,13 +61,13 @@ class TileSpriteMapObject : public MapObject
 {
 private:
     std::vector<AnimationFrame> frames;
-    Vector2D ctr_pos_w;
-    Vector2D obj_size_w;
-    Vector2D ofs_ctr_obj;
+    Vector2Df ctr_pos_w;
+    Vector2Df obj_size_w;
+    Vector2Df ofs_ctr_obj;
     double angle_degrees = 0;
     SDL_RendererFlip flip_flags = SDL_FLIP_NONE;
 
-    static Vector2D calc_alignment_ofs(tmx_map_orient map_orient, tmx_obj_alignment obj_align, double obj_w, double obj_h);
+    static Vector2Df calc_alignment_ofs(tmx_map_orient map_orient, tmx_obj_alignment obj_align, double obj_w, double obj_h);
 
 public:
     TileSpriteMapObject(tmx_map const* map, tmx_object const* obj);

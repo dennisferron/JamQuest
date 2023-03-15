@@ -245,5 +245,5 @@ The "emscripten_set_main_loop_arg" form allows passing the root "Game" or "Appli
 
 ## Credits
 Cursor Custodian by PolyMars was used as example for code and project organization.
-Ground tiles from Kenney Pixel Platformer farm expansion.
+Example tile mapes from https://github.com/jamesbowman/tiled-maps.
 TMX C Loader from https://github.com/baylej/tmx to load Tiled maps.

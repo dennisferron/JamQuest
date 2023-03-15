@@ -13,8 +13,8 @@ RectangleMapObject::RectangleMapObject(const SDL_Rect& rect)
 
 void RectangleMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    Vector2D p0_vp = camera.world_to_viewport({(double)rect.x, (double)rect.y});
-    Vector2D p1_vp = camera.world_to_viewport({(double)rect.x + rect.w, (double)rect.y + rect.h });
+    Vector2Df p0_vp = camera.world_to_viewport({(double)rect.x, (double)rect.y});
+    Vector2Df p1_vp = camera.world_to_viewport({(double)rect.x + rect.w, (double)rect.y + rect.h });
 
     SDL_Rect rect_vp = {
         (int)p0_vp.x,
@@ -30,14 +30,14 @@ RectangleMapObject::RectangleMapObject(tmx_object const* obj)
 {
 }
 
-PolyMapObject::PolyMapObject(Vector2D const& pos, const std::vector<Vector2D>& points, bool closed)
+PolyMapObject::PolyMapObject(Vector2Df const& pos, const std::vector<Vector2Df>& points, bool closed)
     : pos(pos), points(points), closed(closed)
 {
 }
 
-std::vector<Vector2D> PolyMapObject::conv_points(const tmx_shape* shape)
+std::vector<Vector2Df> PolyMapObject::conv_points(const tmx_shape* shape)
 {
-    std::vector<Vector2D> result;
+    std::vector<Vector2Df> result;
 
     for (int i=0; i<shape->points_len; i++)
     {
@@ -58,10 +58,10 @@ PolyMapObject::PolyMapObject(const tmx_object* obj) :
 {
 }
 
-void PolyMapObject::draw_line(SDL_Renderer* renderer, const Camera2D& camera, const Vector2D& p0, const Vector2D& p1) const
+void PolyMapObject::draw_line(SDL_Renderer* renderer, const Camera2D& camera, const Vector2Df& p0, const Vector2Df& p1) const
 {
-    Vector2D p0_vp = camera.world_to_viewport(pos + p0);
-    Vector2D p1_vp = camera.world_to_viewport(pos + p1);
+    Vector2Df p0_vp = camera.world_to_viewport(pos + p0);
+    Vector2Df p1_vp = camera.world_to_viewport(pos + p1);
 
     int x0 = (int)p0_vp.x;
     int y0 = (int)p0_vp.y;
@@ -184,13 +184,13 @@ TileSpriteMapObject::TileSpriteMapObject(tmx_map const* map, const tmx_object* o
 
 void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    Vector2D tile_ul_w = ctr_pos_w - ofs_ctr_obj;
-    Vector2D tile_br_w = tile_ul_w + obj_size_w;
+    Vector2Df tile_ul_w = ctr_pos_w - ofs_ctr_obj;
+    Vector2Df tile_br_w = tile_ul_w + obj_size_w;
 
-    Vector2D ctr_pos_vp = camera.world_to_viewport(ctr_pos_w);
-    Vector2D tile_ul_vp = camera.world_to_viewport(tile_ul_w);
-    Vector2D tile_br_vp = camera.world_to_viewport(tile_br_w);
-    Vector2D dest_sz_vp = tile_br_vp - tile_ul_vp;
+    Vector2Df ctr_pos_vp = camera.world_to_viewport(ctr_pos_w);
+    Vector2Df tile_ul_vp = camera.world_to_viewport(tile_ul_w);
+    Vector2Df tile_br_vp = camera.world_to_viewport(tile_br_w);
+    Vector2Df dest_sz_vp = tile_br_vp - tile_ul_vp;
 
     SDL_Rect dest_rect = {
             (int)tile_ul_vp.x,

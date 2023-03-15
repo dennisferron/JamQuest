@@ -3,6 +3,7 @@
 #include "SdlApplication.hpp"
 #include "TileGridLayer.hpp"
 #include "LayerGroup.hpp"
+#include "ZoomableView.hpp"
 
 #include <tmx.h>
 
@@ -13,6 +14,7 @@ private:
     tmx_map *map = nullptr;
 
     LayerGroup* root_layer_group = nullptr;
+    ZoomableView* zoom_view = nullptr;
 
     static void* SDL_tex_loader(const char *path);
 

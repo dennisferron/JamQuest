@@ -2,48 +2,58 @@
 
 #include <cmath>
 
+template <typename T>
 struct Vector2D
 {
-    double x;
-    double y;
+    T x;
+    T y;
 };
 
-inline Vector2D floor(Vector2D const& a)
+using Vector2Df = Vector2D<double>;
+using Vector2Di = Vector2D<int>;
+
+inline Vector2Df floor(Vector2Df const& a)
 {
     return { std::floor(a.x), std::floor(a.y) };
 }
 
-inline Vector2D ceil(Vector2D const& a)
+inline Vector2Df ceil(Vector2Df const& a)
 {
     return { std::ceil(a.x), std::ceil(a.y) };
 }
 
-inline Vector2D operator +(Vector2D const& a, Vector2D const& b)
+template <typename T>
+Vector2D<T> operator +(Vector2D<T> const& a, Vector2D<T> const& b)
 {
     return { a.x + b.x, a.y + b.y };
 }
 
-inline Vector2D operator -(Vector2D const& a, Vector2D const& b)
+template <typename T>
+Vector2D<T> operator -(Vector2D<T> const& a, Vector2D<T> const& b)
 {
     return { a.x - b.x, a.y - b.y };
 }
 
-inline Vector2D operator *(Vector2D const& a, Vector2D const& b)
+template <typename T>
+Vector2D<T> operator *(Vector2D<T> const& a, Vector2D<T> const& b)
 {
     return { a.x * b.x, a.y * b.y };
 }
 
-inline Vector2D operator /(Vector2D const& a, Vector2D const& b)
+template <typename T>
+Vector2D<T> operator /(Vector2D<T> const& a, Vector2D<T> const& b)
 {
     return { a.x / b.x, a.y / b.y };
 }
 
-inline Vector2D operator /(Vector2D const& a, double b)
+template <typename T>
+Vector2D<T> operator /(Vector2D<T> const& a, T const& b)
 {
     return { a.x / b, a.y / b };
 }
 
-inline Vector2D operator *(double a, Vector2D const& b)
+template <typename T>
+Vector2D<T> operator *(T const& a, Vector2D<T> const& b)
 {
     return { a * b.x, a * b.y };
 }
@@ -56,15 +66,42 @@ inline double sqrt_sign(double x)
         return std::sqrt(x);
 }
 
-inline Vector2D sqrt_sign(Vector2D const& a)
+inline Vector2Df sqrt_sign(Vector2Df const& a)
 {
     return { sqrt_sign(a.x), sqrt_sign(a.y) };
 }
 
-inline Vector2D abs(Vector2D const& a)
+inline Vector2Df abs(Vector2Df const& a)
 {
     return { fabs(a.x), fabs(a.y) };
 }
+
+template <typename T>
+struct Rect2D
+{
+    T left;
+    T top;
+    T right;
+    T bottom;
+};
+
+using Rect2Di = Rect2D<int>;
+using Rect2Df = Rect2D<double>;
+
+template <typename T>
+Rect2D<T> operator +(Rect2D<T> const& a, Vector2D<T> const& b)
+{
+    return { a.left + b.x, a.top + b.y,
+             a.right + b.x, a.bottom + b.y};
+}
+
+template <typename T>
+Rect2D<T> operator -(Rect2D<T> const& a, Vector2D<T> const& b)
+{
+    return { a.left - b.x, a.top - b.y,
+             a.right - b.x, a.bottom - b.y};
+}
+
 
 class Camera2D
 {
@@ -81,7 +118,7 @@ private:
      * (Using SDL viewport ensures drawing clips to viewport boundaries;
      * Camera2D settings alone do not prevent out of bounds drawing.)
      */
-    Vector2D view_size;
+    Vector2Df view_size;
 
     /*
      * Camera center and extent are
@@ -89,31 +126,61 @@ private:
      * visualize what will be visible regardless of viewport.
      * Visible map area is -0.5*extent+center to 0.5*extent+center.
      */
-    Vector2D extent;
-    Vector2D center;
+    Vector2Df extent;
+    Vector2Df center;
 
 public:
     // View size should be logical size of the SDL viewport.
     // Extent and center will be derived from view size to
     // achieve a default 1:1 mapping of world to viewport.
-    Camera2D(Vector2D const& view_size);
+    Camera2D(Vector2Df const& view_size)
+            : view_size(view_size), extent(view_size), center(0.5*view_size)
+    {
+    }
 
     Camera2D(int viewport_w, int viewport_h) :
-        Camera2D(Vector2D {
-            static_cast<double>(viewport_w),
-            static_cast<double>(viewport_h)
-        }) {}
+            Camera2D(Vector2Df {
+                    static_cast<double>(viewport_w),
+                    static_cast<double>(viewport_h)
+            }) {}
 
-    Vector2D world_to_viewport(Vector2D const& w) const;
-    Vector2D viewport_to_world(Vector2D const& v) const;
+    Vector2Df world_to_viewport(const Vector2Df& w) const
+    {
+        return view_size * (w - center) / extent + 0.5*view_size;
+    }
 
-    Vector2D const& get_view_size() const
+    Vector2Df viewport_to_world(const Vector2Df& v) const
+    {
+        return extent * (v - 0.5*view_size) / view_size + center;
+    }
+
+    Vector2Df const& get_view_size() const
         { return view_size; }
 
+    Vector2Df const& get_extent() const
+        { return extent; }
+
     // Set camera view extent in world coordinates.
-    void set_extent(Vector2D const& new_extent)
+    void set_view_size(Vector2Df const& new_view_size)
+        { view_size = new_view_size; }
+
+    // Set camera view extent in world coordinates.
+    void set_extent(Vector2Df const& new_extent)
         { extent = new_extent; }
 
-    void set_center(Vector2D const& new_center)
+    void set_center(Vector2Df const& new_center)
         { center = new_center; }
+
+    Rect2Df world_rect() const
+    {
+        Vector2Df p0 = center - 0.5*extent;
+        Vector2Df p1 = center + 0.5*extent;
+        return
+        {
+            p0.x,
+            p0.y,
+            p1.x,
+            p1.y
+        };
+    }
 };

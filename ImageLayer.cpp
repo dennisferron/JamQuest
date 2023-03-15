@@ -13,8 +13,8 @@ ImageLayer::ImageLayer(const tmx_map* map, const tmx_layer* layer)
 
 void ImageLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    Vector2D p0_vp = camera.world_to_viewport(pos_w);
-    Vector2D p1_vp = camera.world_to_viewport(size_w);
+    Vector2Df p0_vp = camera.world_to_viewport(pos_w);
+    Vector2Df p1_vp = camera.world_to_viewport(size_w);
 
     SDL_Rect dst_rect = {
             (int)p0_vp.x,

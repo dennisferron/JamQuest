@@ -2,7 +2,7 @@
 
 TileGridLayer::TileGridLayer(tmx_map const* map, tmx_layer const* layer)
     : opacity(layer->opacity), map_width(map->width), map_height(map->height),
-      tile_size_in_world({(double)map->tile_width, (double)map->tile_height})
+      map_tile_size({(int)map->tile_width, (int)map->tile_height})
 {
     cells.resize(map_height*map_width);
 
@@ -35,107 +35,77 @@ TileGridLayer::TileGridLayer(tmx_map const* map, tmx_layer const* layer)
 
 void TileGridLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    Vector2D p0 = floor(viewport_to_tile(camera, {0,0}));
-    Vector2D p1 = ceil(viewport_to_tile(camera, camera.get_view_size()));
+    Rect2Df rect = camera.world_rect() - parallax_offset;
 
-    std::size_t col_min = clip_index_dimension(p0.x, 0, map_width);
-    std::size_t col_max = clip_index_dimension(p1.x, 0, map_width);
-    std::size_t row_min = clip_index_dimension(p0.y, 0, map_height);
-    std::size_t row_max = clip_index_dimension(p1.y, 0, map_height);
-
-    for (std::size_t row = row_min; row < row_max; row++)
+    for (double y = floor(rect.top); y <= ceil(rect.bottom); y++)
     {
-        for (std::size_t col = col_min; col < col_max; col++)
+        if (y >= 0.0 && y < map_height)
         {
-            unsigned int cell_index = (row * map_width) + col;
-            Tile const* tile = cells[cell_index].tile;
-
-            if (tile != nullptr)
+            for (double x = floor(rect.left); x <= ceil(rect.right); x++)
             {
-                // Determine which animation frame to display.
-                AnimationFrame const& frame = tile->frames[tile->cur_frame];
-
-                // The size of the frame image could in theory
-                // be different from the map tile size (spacing);
-                // this also affects where the tile upper left should go.
-                // These aliases make the equations for tile_pos_w
-                // (see below) fit on one line.
-                Vector2D tl_sz = tile_size_in_world;
-                double src_w = frame.source_region.w;
-                double src_h = frame.source_region.h;
-
-                // Calculate upper left of tile col,row in world coordinates.
-                // plus a correction factor if image size different from tiles.
-                // (The correction assumes we want to keep tile center in same place.)
-                Vector2D tile_ul_w = {
-                        col * tl_sz.x + (tl_sz.x-src_w)/2,
-                        row * tl_sz.y + (tl_sz.y-src_h)/2
-                };
-
-                // Calculate the bottom right from upper left, since camera
-                // is based on points not sizes.
-                Vector2D tile_br_w = tile_ul_w + Vector2D {src_w, src_h};
-
-                // And then convert these to viewport for the dest rect.
-                Vector2D tile_ul_vp = camera.world_to_viewport(tile_ul_w);
-                Vector2D tile_br_vp = camera.world_to_viewport(tile_br_w);
-                Vector2D dest_sz_vp = tile_br_vp - tile_ul_vp;
-
-                SDL_Rect dest_rect = {
-                        (int)tile_ul_vp.x,
-                        (int)tile_ul_vp.y,
-                        (int)dest_sz_vp.x,
-                        (int)dest_sz_vp.y
-                };
-
-                // It's possible the camera transform could have flipped
-                // the left/right or upper/lower designations, so
-                // normalize the rect if width or height are negative.
-                if (dest_rect.w < 0)
+                if (x >= 0.0 && x < map_width)
                 {
-                    dest_rect.w = -dest_rect.w;
-                    dest_rect.x -= dest_rect.w;
+                    unsigned int cell_index =
+                        static_cast<unsigned int>(y * map_width + x);
+                    Tile const* tile = cells[cell_index].tile;
+                    if (tile != nullptr)
+                    {
+                        Vector2Df center = { x+0.5, y+0.5 };
+                        SDL_RendererFlip flip_flags = cells[cell_index].flip_flags;
+                        draw_tile(renderer, camera, tile, center, flip_flags);
+                    }
                 }
-                if (dest_rect.h < 0) // not an else if
-                {
-                    dest_rect.h = -dest_rect.h;
-                    dest_rect.y -= dest_rect.h;
-                }
-
-                SDL_RenderCopyEx(
-                        renderer,
-                        frame.source_image,
-                        &frame.source_region,
-                        &dest_rect,
-                        0,
-                        nullptr,
-                        cells[cell_index].flip_flags );
             }
         }
     }
 }
 
-std::size_t TileGridLayer::clip_index_dimension(double value, unsigned int dim_min, unsigned int dim_max)
+void TileGridLayer::draw_tile(SDL_Renderer* renderer,
+                              const Camera2D& camera,
+                              Tile const* tile,
+                              Vector2Df const& center,
+                              SDL_RendererFlip flip_flags) const
 {
-    if (value <= dim_min)
-    {
-        return dim_min;
-    }
-    else if (value >= dim_max)
-    {
-        return dim_max;
-    }
-    else
-    {
-        return static_cast<std::size_t>(value);
-    }
-}
+    // Determine which animation frame to display.
+    AnimationFrame const& frame = tile->frames[tile->cur_frame];
 
-Vector2D TileGridLayer::viewport_to_tile(const Camera2D& camera, const Vector2D& vp) const
-{
-    Vector2D vp_in_world = camera.viewport_to_world(vp);
-    Vector2D world_to_tile = vp_in_world / tile_size_in_world;
-    return world_to_tile;
+    // The size of the animation frame image could in theory
+    // be different from the map tile size (tile spacing);
+    // this also affects where the tile upper left should go.
+    Vector2Df size_ratio =
+    {
+            static_cast<double>(frame.source_region.w)
+                / map_tile_size.x,
+            static_cast<double>(frame.source_region.h)
+                / map_tile_size.y
+    };
+
+    // Calculate the top left and bottom right points
+    // of the tile, scaling size_ratio about the center.
+    Vector2Df world_ul = center - 0.5*size_ratio;
+    Vector2Df world_br = center + 0.5*size_ratio;
+
+    // And then convert these to viewport for the dest rect.
+    Vector2Df p0 = camera.world_to_viewport(world_ul);
+    Vector2Df p1 = camera.world_to_viewport(world_br);
+
+    Vector2Df size_in_view = floor(p1) - floor(p0);
+
+    SDL_Rect dest_rect = {
+            (int)p0.x,
+            (int)p0.y,
+            (int)size_in_view.x,
+            (int)size_in_view.y
+    };
+
+    SDL_RenderCopyEx(
+            renderer,
+            frame.source_image,
+            &frame.source_region,
+            &dest_rect,
+            0,
+            nullptr,
+            flip_flags );
 }
 
 void TileGridLayer::update(uint32_t delta_ms)

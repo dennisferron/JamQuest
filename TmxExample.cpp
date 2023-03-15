@@ -26,7 +26,7 @@ TmxExample::TmxExample()
     tmx_img_load_func = SDL_tex_loader;
     tmx_img_free_func = (void (*)(void*))SDL_DestroyTexture;
 
-    std::string map_file = "/res/maps/objecttemplates.tmx";
+    std::string map_file = "res/maps/gameart2d-desert.tmx";
     map = tmx_load(map_file.c_str());
     if (!map)
     {
@@ -44,6 +44,7 @@ TmxExample::TmxExample()
     }
 
     root_layer_group = new LayerGroup(map, map->ly_head);
+    zoom_view = new ZoomableView(renderer, 320, 200);
 }
 
 TmxExample::~TmxExample()
@@ -53,7 +54,10 @@ TmxExample::~TmxExample()
 
 void TmxExample::gameLoop()
 {
+    static double total_time = 0;
+
     uint32_t elapsed_time_ms = get_elapsed_time();
+    total_time += elapsed_time_ms;
 
     SDL_Event ev;
 
@@ -81,10 +85,12 @@ void TmxExample::gameLoop()
 
     Camera2D camera(viewport_w, viewport_h);
 
-    camera.set_extent({1000, 600});
-    camera.set_center({420, 280});
+    camera.set_extent({32, 20});
+    camera.set_center({0.001 * total_time + 10,
+                       6 + 12 * sin(0.00001 * total_time)});
 
-    root_layer_group->render(renderer, camera);
+    //root_layer_group->render(renderer, camera);
+    zoom_view->render(renderer, root_layer_group, camera);
 
     SDL_RenderPresent(renderer);
 }
