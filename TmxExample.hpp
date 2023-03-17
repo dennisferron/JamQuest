@@ -1,8 +1,7 @@
 #pragma once
 
 #include "SdlApplication.hpp"
-#include "TileGridLayer.hpp"
-#include "LayerGroup.hpp"
+#include "TiledMapRenderer.hpp"
 #include "ZoomableView.hpp"
 
 #include <tmx.h>
@@ -13,7 +12,7 @@ private:
     static SDL_Renderer* texture_loader_renderer;
     tmx_map *map = nullptr;
 
-    LayerGroup* root_layer_group = nullptr;
+    TiledMapRenderer* map_renderer = nullptr;
     ZoomableView* zoom_view = nullptr;
 
     static void* SDL_tex_loader(const char *path);

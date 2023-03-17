@@ -27,7 +27,10 @@ ZoomableView::~ZoomableView()
     SDL_DestroyTexture(canvas);
 }
 
-void ZoomableView::render(SDL_Renderer* renderer, const CompositionLayer* composition, Camera2D camera)
+void ZoomableView::render(
+        SDL_Renderer* renderer,
+        Camera2D camera,
+        const CompositionLayer* composition)
 {
     Vector2Df canvas_size = {(double)width, (double)height };
     Vector2Df tile_size_in_canvas =

@@ -43,8 +43,8 @@ TmxExample::TmxExample()
         throw std::runtime_error(msg.str());
     }
 
-    root_layer_group = new LayerGroup(map, map->ly_head);
-    zoom_view = new ZoomableView(renderer, 320, 200);
+    map_renderer = new TiledMapRenderer(map);
+    zoom_view = new ZoomableView(renderer, 160, 144);
 }
 
 TmxExample::~TmxExample()
@@ -73,11 +73,7 @@ void TmxExample::gameLoop()
         }
     };
 
-    root_layer_group->update(elapsed_time_ms);
-
-    tmx_col_bytes col = tmx_col_to_bytes(map->backgroundcolor);
-    SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
-    SDL_RenderClear(renderer);
+    map_renderer->update(elapsed_time_ms);
 
     int viewport_w;
     int viewport_h;
@@ -89,8 +85,8 @@ void TmxExample::gameLoop()
     camera.set_center({0.001 * total_time + 10,
                        6 + 12 * sin(0.00001 * total_time)});
 
-    //root_layer_group->render(renderer, camera);
-    zoom_view->render(renderer, root_layer_group, camera);
+    //map_renderer->render(renderer, camera);
+    zoom_view->render(renderer, camera, map_renderer);
 
     SDL_RenderPresent(renderer);
 }
