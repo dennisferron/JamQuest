@@ -6,3 +6,6 @@ cmake-build-*/
 
 #Ignore Tiled session files
 *.tiled-session
+
+#Ignore automatically created backup files.
+*.bak

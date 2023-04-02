@@ -2,14 +2,10 @@ project(JamQuest)
 
 cmake_minimum_required(VERSION 3.5.1)
 
+include(CMakePrintHelpers)
+
 #set(CMAKE_FIND_DEBUG_MODE TRUE)
 set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
-
-# Library paths
-#        "LibXml2_DIR": "../Common/cmake-install-${presetName}/lib/cmake/libxml2-2.11.0",
-#        "tmx_DIR": "../Common/cmake-install-${presetName}/lib/cmake/tmx"
-
-find_package(tmx REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
         src/entity.cpp
@@ -24,7 +20,16 @@ add_executable(${PROJECT_NAME}
 # Add all headers files under the include directory
 target_include_directories(${PROJECT_NAME} PRIVATE . include)
 
+find_package(tmx REQUIRED CONFIG)
+cmake_print_variables(TMX_LIBRARIES TMX_ROOT_DIR)
 target_link_libraries(${PROJECT_NAME} tmx)
+
+find_package(Bullet REQUIRED)
+cmake_print_variables(BULLET_FOUND BULLET_USE_FILE BULLET_LIBRARIES BULLET_ROOT_DIR)
+#message(FATAL_ERROR "Bullet definitions: ${BULLET_DEFINITIONS}")
+target_link_directories(${PROJECT_NAME} PUBLIC ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+target_link_libraries(${PROJECT_NAME}  Bullet3Collision Bullet3Dynamics Bullet2FileLoader Bullet3Common BulletSoftBody BulletDynamics BulletCollision LinearMath)
+target_include_directories(${PROJECT_NAME} PUBLIC ${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS})
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1")

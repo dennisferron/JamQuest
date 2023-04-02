@@ -1,0 +1,98 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+        "name": "common-presets",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/cmake-build-${presetName}",
+      "installDir": "../Common/cmake-install-${presetName}",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "../Common/cmake-install-${presetName}",
+        "CMAKE_FIND_ROOT_PATH": "C:/Users/dferr/CLionProjects/Common/cmake-install-${presetName}",
+        "BUILD_BULLET2_DEMOS": "OFF",
+        "BUILD_BULLET3": "ON",
+        "BUILD_BULLET_ROBOTICS_EXTRA": "OFF",
+        "BUILD_BULLET_ROBOTICS_GUI_EXTRA": "OFF",
+        "BUILD_CLSOCKET": "OFF",
+        "BUILD_CONVEX_DECOMPOSITION_EXTRA": "OFF",
+        "BUILD_CPU_DEMOS": "OFF",
+        "BUILD_ENET": "OFF",
+        "BUILD_EXTRAS": "ON",
+        "BUILD_GIMPACTUTILS_EXTRA": "OFF",
+        "BUILD_HACD_EXTRA": "OFF",
+        "BUILD_INVERSE_DYNAMIC_EXTRA": "OFF",
+        "BUILD_OBJ2SDF_EXTRA": "OFF",
+        "BUILD_OPENGL3_DEMOS": "OFF",
+        "BUILD_PYBULLET": "OFF",
+        "BUILD_SERIALIZE_EXTRA": "ON",
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_UNIT_TESTS": "OFF",
+        "BULLET2_MULTITHREADING": "OFF",
+        "INSTALL_LIBS": "ON",
+        "CMAKE_DEBUG_POSTFIX": "",
+        "CMAKE_MINSIZEREL_POSTFIX": "",
+        "CMAKE_RELWITHDEBINFO_POSTFIX": ""
+      }
+    },
+    {
+      "name": "toolchain-mingw",
+      "hidden": true,
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "MinGW"
+        }
+      },
+      "generator": "Ninja"
+    },
+    {
+      "name": "toolchain-emscripten",
+      "hidden": true,
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Emscripten"
+        }
+      },
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "C:\\Users\\dferr\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake"
+      }
+    },
+    {
+      "name": "debug-mingw",
+      "inherits": ["toolchain-mingw", "common-presets"]
+    },
+    {
+      "name": "release-mingw",
+      "inherits": ["toolchain-mingw", "common-presets"]
+    },
+    {
+      "name": "release-emscripten",
+      "inherits": ["toolchain-emscripten", "common-presets"],
+      "cacheVariables": {
+      }
+    }
+  ],
+    "buildPresets": [
+      {
+        "name": "build-debug-mingw",
+        "displayName": "Debug - MinGW",
+        "description": "Debug build for MinGW",
+        "configurePreset": "debug-mingw",
+        "configuration": "Debug"
+      },
+        {
+            "name": "build-release-mingw",
+            "displayName": "Release - MinGW",
+            "description": "Release build for MinGW",
+            "configurePreset": "release-mingw",
+            "configuration": "Release"
+        },
+      {
+        "name": "build-release-emscripten",
+        "displayName": "Release - Emscripten",
+        "description": "Release build with Emscripten",
+        "configurePreset": "release-emscripten",
+        "configuration": "Release"
+      }
+    ]
+}
