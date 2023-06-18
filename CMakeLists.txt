@@ -15,7 +15,7 @@ add_executable(${PROJECT_NAME}
         src/player.cpp
         src/renderwindow.cpp
         tmx_sdl_example/tmx_sdl_example.cpp
-        CursorCustodian.cpp CursorCustodian.hpp SdlApplication.cpp SdlApplication.hpp TmxExample.cpp TmxExample.hpp TileGridLayer.cpp TileGridLayer.hpp CompositionLayer.cpp CompositionLayer.hpp ObjectLayer.cpp ObjectLayer.hpp ImageLayer.cpp ImageLayer.hpp LayerGroup.cpp LayerGroup.hpp MapObject.cpp MapObject.hpp Camera2D.cpp Camera2D.hpp Animation.cpp Animation.hpp ZoomableView.cpp ZoomableView.hpp TiledMapRenderer.cpp TiledMapRenderer.hpp)
+        CursorCustodian.cpp CursorCustodian.hpp SdlApplication.cpp SdlApplication.hpp TmxExample.cpp TmxExample.hpp TileGridLayer.cpp TileGridLayer.hpp CompositionLayer.cpp CompositionLayer.hpp ObjectLayer.cpp ObjectLayer.hpp ImageLayer.cpp ImageLayer.hpp LayerGroup.cpp LayerGroup.hpp MapObject.cpp MapObject.hpp Camera2D.cpp Camera2D.hpp Animation.cpp Animation.hpp ZoomableView.cpp ZoomableView.hpp TiledMapRenderer.cpp TiledMapRenderer.hpp Entity.cpp Entity.hpp MotionState.cpp MotionState.hpp TmxLoader.cpp TmxLoader.hpp)
 
 # Add all headers files under the include directory
 target_include_directories(${PROJECT_NAME} PRIVATE . include)

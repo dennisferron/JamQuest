@@ -1,4 +1,5 @@
 #include "TmxExample.hpp"
+#include "TmxLoader.hpp"
 
 #include <stdexcept>
 #include <sstream>
@@ -6,50 +7,169 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-SDL_Renderer* TmxExample::texture_loader_renderer = nullptr;
 
-void* TmxExample::SDL_tex_loader(const char *path)
+int TmxExample::test_bullet()
 {
-    void* result = IMG_LoadTexture(texture_loader_renderer, path);
-    if (!result)
+    //keep track of the shapes, we release memory at exit.
+    //make sure to re-use collision shapes among rigid bodies whenever possible!
+    btAlignedObjectArray<btCollisionShape*> collisionShapes;
+
+    ///create a few basic rigid bodies
+
+    //the ground is a cube of side 100 at position y = -56.
+    //the sphere will hit it at y = -6, with center at -5
     {
-        std::cout << "Failed to load texture: " << path << std::endl;
+        btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+
+        collisionShapes.push_back(groundShape);
+
+        btTransform groundTransform;
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(btVector3(0, -56, 0));
+
+        btScalar mass(0.);
+
+        //rigidbody is dynamic if and only if mass is non zero, otherwise static
+        bool isDynamic = (mass != 0.f);
+
+        btVector3 localInertia(0, 0, 0);
+        if (isDynamic)
+            groundShape->calculateLocalInertia(mass, localInertia);
+
+        //using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+        btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+        btRigidBody* body = new btRigidBody(rbInfo);
+
+        //add the body to the dynamics world
+        dynamicsWorld->addRigidBody(body);
     }
-    return result;
+
+    {
+        //create a dynamic rigidbody
+
+        //btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
+        btCollisionShape* colShape = new btSphereShape(btScalar(1.));
+        collisionShapes.push_back(colShape);
+
+        /// Create Dynamic Objects
+        btTransform startTransform;
+        startTransform.setIdentity();
+
+        btScalar mass(1.f);
+
+        //rigidbody is dynamic if and only if mass is non zero, otherwise static
+        bool isDynamic = (mass != 0.f);
+
+        btVector3 localInertia(0, 0, 0);
+        if (isDynamic)
+            colShape->calculateLocalInertia(mass, localInertia);
+
+        startTransform.setOrigin(btVector3(2, 10, 0));
+
+        //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+        btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
+        btRigidBody* body = new btRigidBody(rbInfo);
+
+        dynamicsWorld->addRigidBody(body);
+    }
+
+    /// Do some simulation
+
+    ///-----stepsimulation_start-----
+    for (int i = 0; i < 150; i++)
+    {
+        dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+
+        //print positions of all objects
+        for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+        {
+            btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
+            btRigidBody* body = btRigidBody::upcast(obj);
+            btTransform trans;
+            if (body && body->getMotionState())
+            {
+                body->getMotionState()->getWorldTransform(trans);
+            }
+            else
+            {
+                trans = obj->getWorldTransform();
+            }
+            printf("world pos object %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+        }
+    }
+
+    ///-----stepsimulation_end-----
+
+    //cleanup in the reverse order of creation/initialization
+
+    ///-----cleanup_start-----
+
+    //remove the rigidbodies from the dynamics world and delete them
+    for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+    {
+        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+        btRigidBody* body = btRigidBody::upcast(obj);
+        if (body && body->getMotionState())
+        {
+            delete body->getMotionState();
+        }
+        dynamicsWorld->removeCollisionObject(obj);
+        delete obj;
+    }
+
+    //delete collision shapes
+    for (int j = 0; j < collisionShapes.size(); j++)
+    {
+        btCollisionShape* shape = collisionShapes[j];
+        collisionShapes[j] = 0;
+        delete shape;
+    }
+
+    delete dynamicsWorld;
+    delete solver;
+    delete overlappingPairCache;
+    delete dispatcher;
+    delete collisionConfiguration;
+
+    //next line is optional: it will be cleared by the destructor when the array goes out of scope
+    collisionShapes.clear();
+
+    return 0;
 }
 
 TmxExample::TmxExample()
 {
-    texture_loader_renderer = renderer;
+    collisionConfiguration = new btDefaultCollisionConfiguration();
+    dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    overlappingPairCache = new btDbvtBroadphase();
+    solver = new btSequentialImpulseConstraintSolver;
 
-    /* Set the callback globs in the main function */
-    tmx_img_load_func = SDL_tex_loader;
-    tmx_img_free_func = (void (*)(void*))SDL_DestroyTexture;
+    dynamicsWorld = new btDiscreteDynamicsWorld(
+            dispatcher,
+            overlappingPairCache,
+            solver,
+            collisionConfiguration);
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
     std::string map_file = "res/maps/gameart2d-desert.tmx";
-    map = tmx_load(map_file.c_str());
-    if (!map)
-    {
-        std::stringstream msg;
-        msg << "Unable to load TMX map file "
-            << map_file;
-        tmx_perror(msg.str().c_str());
+    jq::TmxLoader tmx_loader(map_file, renderer, dynamicsWorld);
+    map_renderer = tmx_loader.get_map_renderer();
 
-        std::string path = "res/maps";
-        std::cout << "Files in directory: " << path << std::endl;
-        for (const auto & entry : fs::directory_iterator(path))
-            std::cout << entry.path() << std::endl;
+    std::cout << "2D layers:\n";
+    map_renderer->debug_print(1);
 
-        throw std::runtime_error(msg.str());
-    }
-
-    map_renderer = new TiledMapRenderer(map);
-    zoom_view = new ZoomableView(renderer, 160, 144);
+    zoom_view = new ZoomableView(renderer, 2000, 1000);
 }
 
 TmxExample::~TmxExample()
 {
-
+    delete dynamicsWorld;
+    delete solver;
+    delete overlappingPairCache;
+    delete dispatcher;
+    delete collisionConfiguration;
 }
 
 void TmxExample::gameLoop()
@@ -73,6 +193,9 @@ void TmxExample::gameLoop()
         }
     };
 
+    dynamicsWorld->stepSimulation(
+            static_cast<btScalar>(0.001 * elapsed_time_ms),
+            10);
     map_renderer->update(elapsed_time_ms);
 
     int viewport_w;

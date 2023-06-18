@@ -25,3 +25,7 @@ This raises the question of whether we process the reverse of that many-to_one r
 That last point then leads to a further question whether we organize the tiles associated with the physics object so that they are part of a group with a common parallax_offset, which could change in world-space if the physics object can move.  It could do effects like a house that moves due to some RPG game event, or a section of a level moving like a platform in a side scroller.  This would seem to be turning a tile-based rendering engine into a hierarchical scene node renderer, like a 2D-OGRE.
 
 That is starting to sound overly complex.  A hierarchical scene node renderer would need to use bounding boxes and recursively calculate what's visible, where.  However what we could do is leave that for a future extension.  In the meantime we could just implement a TileGridLayer that has a uniform tile grid with a single parallax_offset in world coordinates.  It could be extended to support smaller movable sections using a further derived class implemented later if at all.
+
+TODO:  Create a motionstate class that will work for JamQuest.  For reference I copied files from LikeMagic.  There are two motion state classes, KinematicAnimator and PhysicsAnimator.  PhysicsAnimator copies from Bullet to Irrlicht, while Kinematic copies from Irrlicht to Bullet.
+
+I'm not sure the MotionState should be a stand-alone class; perhaps it should be an interface of PhysicsEntity or similarly named class.

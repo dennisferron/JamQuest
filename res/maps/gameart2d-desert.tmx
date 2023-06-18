@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="120" height="18" tilewidth="128" tileheight="128" infinite="0" backgroundcolor="#faf0c8" nextlayerid="3" nextobjectid="1">
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="120" height="18" tilewidth="128" tileheight="128" infinite="0" backgroundcolor="#faf0c8" nextlayerid="5" nextobjectid="16">
  <tileset firstgid="1" name="gameart2d-desert" tilewidth="128" tileheight="128" tilecount="40" columns="5">
   <image source="gameart2d-desert.png" width="640" height="1024"/>
   <tile id="2">
@@ -57,4 +57,21 @@
 3,3,3,3,3,3,3,3,11,12,8,8,8,8,8,8,8,14,15,3,3,3,3,3,3,3,3,3,11,12,8,8,8,8,8,8,8,9,0,0,2,3,3,11,12,8,8,8,8,8,8,8,8,8,8,9,0,0,0,0,0,7,8,14,15,3,3,3,3,11,12,8,8,8,8,8,8,8,8,8,8,8,14,15,3,3,11,12,8,8,8,8,8,8,8,8,8,8,8,9,0,0,0,17,18,18,18,18,18,18,18,18,19,0,7,8,8,8,8,8
 </data>
  </layer>
+ <objectgroup id="4" name="entities">
+  <object id="1" gid="29" x="768" y="1400" width="128" height="128"/>
+  <object id="2" gid="31" x="1432" y="504" width="128" height="128"/>
+  <object id="3" gid="32" x="1528" y="1504" width="128" height="128"/>
+  <object id="4" gid="30" x="856" y="1392" width="128" height="128"/>
+  <object id="5" gid="30" x="312" y="1688" width="128" height="128"/>
+  <object id="6" gid="25" x="504" y="168" width="128" height="128"/>
+  <object id="7" gid="25" x="840" y="160" width="128" height="128"/>
+  <object id="8" gid="25" x="840" y="160" width="128" height="128"/>
+  <object id="9" gid="25" x="1208" y="728" width="128" height="128"/>
+  <object id="10" gid="25" x="1952" y="1040" width="128" height="128"/>
+  <object id="11" gid="26" x="3568" y="1520" width="128" height="128"/>
+  <object id="12" gid="26" x="3592" y="1664" width="128" height="128"/>
+  <object id="13" gid="26" x="3632" y="1776" width="128" height="128"/>
+  <object id="14" gid="26" x="3640" y="1904" width="128" height="128"/>
+  <object id="15" gid="26" x="3656" y="2016" width="128" height="128"/>
+ </objectgroup>
 </map>

@@ -1,16 +1,5 @@
 #include "ImageLayer.hpp"
 
-ImageLayer::ImageLayer(const tmx_map* map, const tmx_layer* layer)
-{
-    pos_w = { 0, 0 };
-    size_w = {
-            (double)map->width * map->tile_width,
-            (double)map->height * map->tile_height
-    };
-
-    texture = (SDL_Texture*)layer->content.image->resource_image;;
-}
-
 void ImageLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
     Vector2Df p0_vp = camera.world_to_viewport(pos_w);
@@ -24,4 +13,9 @@ void ImageLayer::render(SDL_Renderer* renderer, const Camera2D& camera) const
     };
 
     SDL_RenderCopy(renderer, texture, nullptr, &dst_rect);
+}
+
+ImageLayer::ImageLayer(std::string name, SDL_Texture* texture, Vector2Df pos_w, Vector2Df size_w)
+    : CompositionLayer(name), texture(texture), pos_w(pos_w), size_w(size_w)
+{
 }

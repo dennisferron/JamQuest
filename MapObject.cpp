@@ -30,6 +30,12 @@ RectangleMapObject::RectangleMapObject(tmx_object const* obj)
 {
 }
 
+void RectangleMapObject::set_pos(const Vector2Df& new_pos)
+{
+    rect.x = (int)new_pos.x;
+    rect.y = (int)new_pos.y;
+}
+
 PolyMapObject::PolyMapObject(Vector2Df const& pos, const std::vector<Vector2Df>& points, bool closed)
     : pos(pos), points(points), closed(closed)
 {
@@ -83,12 +89,22 @@ void PolyMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
     }
 }
 
+void PolyMapObject::set_pos(const Vector2Df& new_pos)
+{
+    pos = new_pos;
+}
+
 EllipseMapObject::EllipseMapObject(const tmx_object* obj)
 {
 
 }
 
 void EllipseMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
+{
+
+}
+
+void EllipseMapObject::set_pos(const Vector2Df& new_pos)
 {
 
 }
@@ -180,6 +196,13 @@ TileSpriteMapObject::TileSpriteMapObject(tmx_map const* map, const tmx_object* o
     }
 
     frames = get_animation_frames(tile);
+
+    // World coordinates are defines so 1.0 equals 1 tile always.
+    // Correction factor to recast pixel coords to tile units.
+    Vector2Df cf = { 1.0/map->tile_width, 1.0/map->tile_height };
+    ctr_pos_w = cf * ctr_pos_w;
+    obj_size_w = cf * obj_size_w;
+    ofs_ctr_obj = cf * ofs_ctr_obj;
 }
 
 void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
@@ -210,4 +233,9 @@ void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera)
             angle_degrees,
             nullptr, /*rotate around dest rect center*/
             flip_flags );
+}
+
+void TileSpriteMapObject::set_pos(const Vector2Df& new_pos)
+{
+    ctr_pos_w = new_pos;
 }

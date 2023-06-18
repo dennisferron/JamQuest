@@ -5,6 +5,7 @@
 
 #include <tmx.h>
 
+#include <string>
 #include <vector>
 
 class ObjectLayer : public CompositionLayer
@@ -14,6 +15,6 @@ private:
     std::vector<MapObject*> objects;
 
 public:
-    ObjectLayer(tmx_map const* map, tmx_layer const* layer);
+    ObjectLayer(std::string name, uint32_t layer_color, std::vector<MapObject*> objects);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
 };

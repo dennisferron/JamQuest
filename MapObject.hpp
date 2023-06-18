@@ -13,6 +13,7 @@ class MapObject
 public:
     virtual ~MapObject() = 0;
     virtual void render(SDL_Renderer* renderer, Camera2D const& camera) const = 0;
+    virtual void set_pos(Vector2Df const& new_pos) = 0;
 };
 
 // Used for OT_SQUARE
@@ -25,6 +26,7 @@ public:
     RectangleMapObject(tmx_object const* obj);
     RectangleMapObject(SDL_Rect const& rect);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
+    virtual void set_pos(Vector2Df const& new_pos) override;
 };
 
 // Used for OT_POLYGON and OT_POLYLINE
@@ -43,6 +45,7 @@ public:
     PolyMapObject(Vector2Df const& pos, std::vector<Vector2Df> const& points, bool closed);
     PolyMapObject(tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
+    virtual void set_pos(Vector2Df const& new_pos) override;
 };
 
 // Used for OT_ELLIPSE
@@ -54,6 +57,7 @@ private:
 public:
     EllipseMapObject(tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
+    virtual void set_pos(Vector2Df const& new_pos) override;
 };
 
 // Used for tiles displayed as map objects
@@ -67,9 +71,8 @@ private:
     double angle_degrees = 0;
     SDL_RendererFlip flip_flags = SDL_FLIP_NONE;
 
-    static Vector2Df calc_alignment_ofs(tmx_map_orient map_orient, tmx_obj_alignment obj_align, double obj_w, double obj_h);
-
 public:
     TileSpriteMapObject(tmx_map const* map, tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
+    virtual void set_pos(Vector2Df const& new_pos) override;
 };
