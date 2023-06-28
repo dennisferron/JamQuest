@@ -71,4 +71,5 @@ public:
         ConstructionInfo const& info);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
     void update(uint32_t delta_ms) override;
+    Vector2Di get_tile_size() const { return map_tile_size; }
 };

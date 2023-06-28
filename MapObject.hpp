@@ -3,6 +3,7 @@
 #include "Camera2D.hpp"
 #include "Animation.hpp"
 
+#include "btBulletDynamicsCommon.h"
 #include <tmx.h>
 #include <SDL2/SDL.h>
 
@@ -63,7 +64,21 @@ public:
 // Used for tiles displayed as map objects
 class TileSpriteMapObject : public MapObject
 {
+public:
+    struct ConstructionInfo
+    {
+        std::vector<AnimationFrame> frames;
+
+        Vector2Df ctr_pos_w;
+        Vector2Df obj_size_w;
+        Vector2Df ofs_ctr_obj;
+        double angle_degrees = 0;
+        SDL_RendererFlip flip_flags = SDL_FLIP_NONE;
+    };
+
 private:
+    btMotionState* motion_state = nullptr;
+
     std::vector<AnimationFrame> frames;
     Vector2Df ctr_pos_w;
     Vector2Df obj_size_w;
@@ -72,7 +87,9 @@ private:
     SDL_RendererFlip flip_flags = SDL_FLIP_NONE;
 
 public:
+    TileSpriteMapObject(ConstructionInfo const& info);
     TileSpriteMapObject(tmx_map const* map, tmx_object const* obj);
     void render(SDL_Renderer* renderer, Camera2D const& camera) const override;
     virtual void set_pos(Vector2Df const& new_pos) override;
+    void set_motion_state(btMotionState* motion_state);
 };

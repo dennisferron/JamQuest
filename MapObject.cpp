@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+constexpr double PI = 3.14159265359;
+
 MapObject::~MapObject()
 {
 }
@@ -109,108 +111,25 @@ void EllipseMapObject::set_pos(const Vector2Df& new_pos)
 
 }
 
-TileSpriteMapObject::TileSpriteMapObject(tmx_map const* map, const tmx_object* obj) 
-{
-    ctr_pos_w = {obj->x, obj->y};
-    
-    obj_size_w = {0,0};
-    
-    if (obj->width != 0)
-        obj_size_w.x = obj->width;
-    else if (obj->template_ref != nullptr)
-        obj_size_w.x = obj->template_ref->object->width;
-
-    if (obj_size_w.x == 0)
-        throw std::runtime_error("Neither object nor template defines width.");
-
-    if (obj->height != 0)
-        obj_size_w.y = obj->height;
-    else if (obj->template_ref != nullptr)
-        obj_size_w.y = obj->template_ref->object->height;
-
-    if (obj_size_w.y == 0)
-        throw std::runtime_error("Neither object nor template defines height.");
-
-    angle_degrees = 0;
-
-    if (obj->rotation != 0)
-        angle_degrees = obj->rotation;
-    else if (obj->template_ref != nullptr)
-        angle_degrees = obj->template_ref->object->rotation;
-
-    unsigned int raw_gid = obj->content.gid;
-
-    if (raw_gid == 0 && obj->template_ref != nullptr)
-    {
-        raw_gid = obj->template_ref->object->content.gid;
-    }
-
-    if (raw_gid == 0)
-    {
-        throw std::runtime_error("Neither tile/sprite map object nor its template defines a GID.");
-    }
-
-    unsigned int flags = raw_gid & ~TMX_FLIP_BITS_REMOVAL;
-
-    flip_flags = static_cast<SDL_RendererFlip>(
-        (flags & TMX_FLIPPED_HORIZONTALLY ? (int)SDL_FLIP_HORIZONTAL : 0)
-    |   (flags & TMX_FLIPPED_VERTICALLY ? (int)SDL_FLIP_VERTICAL : 0));
-
-    unsigned int gid = raw_gid & TMX_FLIP_BITS_REMOVAL;
-    tmx_tile const* tile = map->tiles[gid];
-
-    tmx_obj_alignment alignment = tile->tileset->objectalignment;
-
-    // Default is bottom left except in ISO mode.
-    if (alignment == OA_NONE && map->orient == O_ISO)
-        alignment = OA_BOTTOM;
-
-    // Factoring out the object alignment offset into separate
-    // switch-cases for the x and y coordinates means we only
-    // have to handle N+M cases instead of N*M cases.
-    switch (alignment)
-    {
-        case OA_RIGHT:
-        case OA_TOPRIGHT:
-        case OA_BOTTOMRIGHT:
-            ofs_ctr_obj.x = obj_size_w.x;
-        case OA_TOP:
-        case OA_BOTTOM:
-        case OA_CENTER:
-            ofs_ctr_obj.x = obj_size_w.x / 2.0;
-        default:
-            ofs_ctr_obj.x = 0.0;
-    }
-    switch (alignment)
-    {
-        case OA_BOTTOM:
-        case OA_BOTTOMLEFT:
-        case OA_BOTTOMRIGHT:
-            ofs_ctr_obj.y = obj_size_w.y;
-        case OA_LEFT:
-        case OA_RIGHT:
-        case OA_CENTER:
-            ofs_ctr_obj.y = obj_size_w.y / 2.0;
-        default:
-            ofs_ctr_obj.y = 0.0;
-    }
-
-    frames = get_animation_frames(tile);
-
-    // World coordinates are defines so 1.0 equals 1 tile always.
-    // Correction factor to recast pixel coords to tile units.
-    Vector2Df cf = { 1.0/map->tile_width, 1.0/map->tile_height };
-    ctr_pos_w = cf * ctr_pos_w;
-    obj_size_w = cf * obj_size_w;
-    ofs_ctr_obj = cf * ofs_ctr_obj;
-}
-
 void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera) const
 {
-    Vector2Df tile_ul_w = ctr_pos_w - ofs_ctr_obj;
+    Vector2Df ctr_pos_w_ = ctr_pos_w;
+    double angle_degrees_ = angle_degrees;
+
+    if (motion_state)
+    {
+        btTransform trans;
+        motion_state->getWorldTransform(trans);
+        ctr_pos_w_ = { trans.getOrigin().x(), trans.getOrigin().y() };
+        btScalar yawZ, pitchY, rollX;
+        trans.getRotation().getEulerZYX(yawZ, pitchY, rollX);
+        angle_degrees_ = 180 * yawZ / PI;
+    }
+
+    Vector2Df tile_ul_w = ctr_pos_w_ - ofs_ctr_obj;
     Vector2Df tile_br_w = tile_ul_w + obj_size_w;
 
-    Vector2Df ctr_pos_vp = camera.world_to_viewport(ctr_pos_w);
+    Vector2Df ctr_pos_vp = camera.world_to_viewport(ctr_pos_w_);
     Vector2Df tile_ul_vp = camera.world_to_viewport(tile_ul_w);
     Vector2Df tile_br_vp = camera.world_to_viewport(tile_br_w);
     Vector2Df dest_sz_vp = tile_br_vp - tile_ul_vp;
@@ -230,7 +149,7 @@ void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera)
             frame.source_image,
             &frame.source_region,
             &dest_rect,
-            angle_degrees,
+            angle_degrees_,
             nullptr, /*rotate around dest rect center*/
             flip_flags );
 }
@@ -238,4 +157,32 @@ void TileSpriteMapObject::render(SDL_Renderer* renderer, const Camera2D& camera)
 void TileSpriteMapObject::set_pos(const Vector2Df& new_pos)
 {
     ctr_pos_w = new_pos;
+}
+
+TileSpriteMapObject::TileSpriteMapObject(const TileSpriteMapObject::ConstructionInfo& info)
+        :
+    frames(info.frames),
+    ctr_pos_w(info.ctr_pos_w),
+    obj_size_w(info.obj_size_w),
+    ofs_ctr_obj(info.ofs_ctr_obj),
+    angle_degrees(info.angle_degrees),
+    flip_flags(info.flip_flags)
+{
+}
+
+void TileSpriteMapObject::set_motion_state(btMotionState* motion_state)
+{
+    this->motion_state = motion_state;
+
+    if (motion_state)
+    {
+        btTransform trans;
+        trans.setIdentity();
+        trans.setOrigin({(btScalar)ctr_pos_w.x, (btScalar)ctr_pos_w.y, 0});
+        btQuaternion quat;
+        quat.setRotation({0,0,1},
+             (btScalar)(angle_degrees * PI / 180));
+        trans.setRotation(quat);
+        motion_state->setWorldTransform(trans);
+    }
 }

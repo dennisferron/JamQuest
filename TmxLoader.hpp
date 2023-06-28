@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TiledMapRenderer.hpp"
+#include "Entity.hpp"
 
 class LayerGroup;
 class ObjectLayer;
@@ -20,10 +21,16 @@ namespace jq
 
         TiledMapRenderer* map_renderer;
 
+        std::vector<btCollisionShape*> shapes;
+        std::vector<jq::Entity*> entities;
+
         LayerGroup* load_layer_group(std::string name, tmx_layer const* list_head);
         ObjectLayer* load_object_layer(const tmx_layer* layer);
         ImageLayer* load_image_layer(tmx_layer const* layer);
         TileGridLayer* load_tile_grid_layer(tmx_layer const* layer);
+
+        MapObject* load_object(tmx_object const* obj);
+        TileSpriteMapObject* load_tile_sprite_map_object(tmx_object const* obj);
 
     public:
         TmxLoader(std::string map_file,

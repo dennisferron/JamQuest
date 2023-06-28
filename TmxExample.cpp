@@ -1,5 +1,6 @@
 #include "TmxExample.hpp"
 #include "TmxLoader.hpp"
+#include "DebugDrawer.hpp"
 
 #include <stdexcept>
 #include <sstream>
@@ -151,7 +152,24 @@ TmxExample::TmxExample()
             overlappingPairCache,
             solver,
             collisionConfiguration);
-    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    dynamicsWorld->setGravity(btVector3(0, 10, 0));
+
+//    {
+//        btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(1.), btScalar(1.)));
+//
+//        btTransform groundTransform;
+//        groundTransform.setIdentity();
+//        groundTransform.setOrigin(btVector3(0, 15, 0));
+//
+//        btScalar mass(0.);
+//        btVector3 localInertia(0, 0, 0);
+//
+//        btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+//        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+//        btRigidBody* body = new btRigidBody(rbInfo);
+//
+//        dynamicsWorld->addRigidBody(body);
+//    }
 
     std::string map_file = "res/maps/gameart2d-desert.tmx";
     jq::TmxLoader tmx_loader(map_file, renderer, dynamicsWorld);
@@ -198,6 +216,24 @@ void TmxExample::gameLoop()
             10);
     map_renderer->update(elapsed_time_ms);
 
+    //print positions of all objects
+    for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+    {
+        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
+        btRigidBody* body = btRigidBody::upcast(obj);
+        btTransform trans;
+        if (body && body->getMotionState())
+        {
+            body->getMotionState()->getWorldTransform(trans);
+            //printf("rigid body %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+        }
+        else
+        {
+            trans = obj->getWorldTransform();
+            //printf("collision object %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+        }
+    }
+
     int viewport_w;
     int viewport_h;
     SDL_RenderGetLogicalSize(renderer, &viewport_w, &viewport_h);
@@ -210,6 +246,12 @@ void TmxExample::gameLoop()
 
     //map_renderer->render(renderer, camera);
     zoom_view->render(renderer, camera, map_renderer);
+
+    jq::DebugDrawer debug_drawer(renderer  );
+    debug_drawer.update_camera(camera);
+    dynamicsWorld->setDebugDrawer(&debug_drawer);
+    dynamicsWorld->debugDrawWorld();
+    dynamicsWorld->setDebugDrawer(nullptr);
 
     SDL_RenderPresent(renderer);
 }
