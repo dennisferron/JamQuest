@@ -1,6 +1,6 @@
-project(JamQuest)
-
 cmake_minimum_required(VERSION 3.5.1)
+
+project(JamQuest)
 
 include(CMakePrintHelpers)
 
@@ -15,7 +15,7 @@ add_executable(${PROJECT_NAME}
         src/player.cpp
         src/renderwindow.cpp
         tmx_sdl_example/tmx_sdl_example.cpp
-        CursorCustodian.cpp CursorCustodian.hpp SdlApplication.cpp SdlApplication.hpp TmxExample.cpp TmxExample.hpp TileGridLayer.cpp TileGridLayer.hpp CompositionLayer.cpp CompositionLayer.hpp ObjectLayer.cpp ObjectLayer.hpp ImageLayer.cpp ImageLayer.hpp LayerGroup.cpp LayerGroup.hpp MapObject.cpp MapObject.hpp Camera2D.cpp Camera2D.hpp Animation.cpp Animation.hpp ZoomableView.cpp ZoomableView.hpp TiledMapRenderer.cpp TiledMapRenderer.hpp Entity.cpp Entity.hpp MotionState.cpp MotionState.hpp TmxLoader.cpp TmxLoader.hpp DebugDrawer.cpp DebugDrawer.hpp)
+        CursorCustodian.cpp CursorCustodian.hpp SdlApplication.cpp SdlApplication.hpp TmxExample.cpp TmxExample.hpp TileGridLayer.cpp TileGridLayer.hpp CompositionLayer.cpp CompositionLayer.hpp ObjectLayer.cpp ObjectLayer.hpp ImageLayer.cpp ImageLayer.hpp LayerGroup.cpp LayerGroup.hpp MapObject.cpp MapObject.hpp Camera2D.cpp Camera2D.hpp Animation.cpp Animation.hpp ZoomableView.cpp ZoomableView.hpp TiledMapRenderer.cpp TiledMapRenderer.hpp Entity.cpp Entity.hpp MotionState.cpp MotionState.hpp TmxLoader.cpp TmxLoader.hpp DebugDrawer.cpp DebugDrawer.hpp src/opengl_demo.cpp Shader.cpp Shader.hpp)
 
 # Add all headers files under the include directory
 target_include_directories(${PROJECT_NAME} PRIVATE . include)
@@ -32,7 +32,7 @@ target_link_libraries(${PROJECT_NAME}  Bullet3Collision Bullet3Dynamics Bullet2F
 target_include_directories(${PROJECT_NAME} PUBLIC ${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS})
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
-    set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1")
+    set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1 -sUSE_ZLIB=1")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${USE_FLAGS}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${USE_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS}")
@@ -40,7 +40,7 @@ if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 
     #LIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
     set(EMSCRIPTEN_SDL_OPTS
-"SHELL: -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png,jpg,gif] -s USE_SDL_GFX=2")
+"SHELL: -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png,jpg,gif] -s USE_SDL_GFX=2 -sUSE_ZLIB=1 --use-port=zlib")
 
     target_compile_options(${PROJECT_NAME} PUBLIC
             "${EMSCRIPTEN_SDL_OPTS}")
@@ -77,4 +77,7 @@ else()
 
     #find_package(SDL2_gfx REQUIRED)
     #target_link_libraries(${PROJECT_NAME} SDL2::GFX)
+
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
 endif()

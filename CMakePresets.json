@@ -31,7 +31,7 @@
       },
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "C:\\Users\\dferr\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake"
+        "CMAKE_TOOLCHAIN_FILE": "C:\\source\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake"
       }
     },
     {

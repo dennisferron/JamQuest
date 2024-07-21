@@ -12,7 +12,7 @@
 
 int main2(int argc, char* args[]);
 
-int main(int argc, char* args[])
+int main3(int argc, char* args[])
 {
     //return main2(argc, args);
 
